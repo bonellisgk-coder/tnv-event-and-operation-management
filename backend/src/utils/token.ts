@@ -1,0 +1,5 @@
+import * as crypto from 'crypto';
+
+export function generateSecureToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}

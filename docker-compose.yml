@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: tnv_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_pass_123
+      POSTGRES_DB: tnv_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: tnv_backend
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres_pass_123@db:5432/tnv_db?schema=public
+      - PORT=4000
+      - JWT_ACCESS_SECRET=super-access-secret-key-987654321-change-me
+      - JWT_REFRESH_SECRET=super-refresh-secret-key-987654321-change-me
+      - APP_URL=http://localhost:5173
+      - FRONTEND_URL=http://localhost:5173
+      - SMTP_HOST=smtp.ethereal.email
+      - SMTP_PORT=587
+      - SMTP_USER=
+      - SMTP_PASS=
+      - SMTP_FROM="TN Volunteer Platform" <no-reply@volunteer.tn.gov.in>
+    depends_on:
+      - db
+    # Push database schema, seed demo database entries, and start backend service
+    command: sh -c "npx prisma db push --accept-data-loss && npx prisma db seed && node dist/index.js"
+    volumes:
+      - backend_uploads:/app/assets/templates
+      - backend_emails:/app/sent_emails
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=http://localhost:4000/api
+    container_name: tnv_frontend
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+  adminer:
+    image: adminer:latest
+    container_name: tnv_adminer
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
+  backend_uploads:
+  backend_emails:

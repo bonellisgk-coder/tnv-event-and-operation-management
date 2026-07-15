@@ -1,0 +1,116 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                 String               @id @default(uuid())
+  name               String
+  email              String               @unique
+  phone              String               @unique
+  passwordHash       String
+  role               String               // Replaced enum Role
+  departmentId       String?
+  department         Department?          @relation(fields: [departmentId], references: [id])
+  tasks              Task[]               @relation("UserTasks")
+  passwordResetTokens PasswordResetToken[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  users     User[]
+  events    Event[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Event {
+  id                  String               @id @default(uuid())
+  slug                String               @unique
+  title               String
+  description         String
+  date                DateTime
+  startTime           String
+  endTime             String
+  venue               String
+  departmentId        String?
+  department          Department?          @relation(fields: [departmentId], references: [id])
+  type                String
+  status              String               @default("DRAFT") // Replaced enum EventStatus
+  qrCodeUrl           String?
+  checkinEnabled      Boolean              @default(false)
+  participants        Participant[]
+  certificateTemplates CertificateTemplate[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+}
+
+model Participant {
+  id                String             @id @default(uuid())
+  eventId           String
+  event             Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name              String
+  email             String
+  phone             String
+  status            String             @default("PENDING") // Replaced enum ParticipantStatus
+  editToken         String             @unique
+  editTokenExpires  DateTime
+  checkinAt         DateTime?
+  additionalMembers AdditionalMember[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  @@unique([eventId, email])
+  @@unique([eventId, phone])
+}
+
+model AdditionalMember {
+  id            String      @id @default(uuid())
+  participantId String
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  name          String
+  email         String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Task {
+  id          String       @id @default(uuid())
+  title       String
+  description String
+  assigneeId  String?
+  assignee    User?        @relation("UserTasks", fields: [assigneeId], references: [id])
+  priority    String       @default("MEDIUM") // Replaced enum TaskPriority
+  deadline    DateTime
+  status      String       @default("TODO") // Replaced enum TaskStatus
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model CertificateTemplate {
+  id           String   @id @default(uuid())
+  eventId      String   @unique
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  imageUrl     String
+  namePosition String   // Store as JSON or string like "x,y,fontSize"
+  qrPosition   String   // Store as JSON or string like "x,y,size"
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
