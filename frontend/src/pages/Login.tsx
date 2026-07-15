@@ -1,13 +1,54 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, Eye, EyeOff, ShieldAlert, Award } from 'lucide-react';
+import { ArrowLeft, Eye, EyeOff, ShieldAlert, Shield, Briefcase, Users } from 'lucide-react';
+
+type LoginRole = 'ADMIN' | 'MANAGER' | 'VOLUNTEER';
+
+const ROLE_CONFIG: Record<LoginRole, {
+  label: string;
+  sublabel: string;
+  icon: React.ReactNode;
+  accentBg: string;
+  accentText: string;
+  accentBorder: string;
+  hint: string;
+}> = {
+  ADMIN: {
+    label: 'Admin',
+    sublabel: 'State Administrator',
+    icon: <Shield className="w-5 h-5" />,
+    accentBg: 'bg-emerald-50',
+    accentText: 'text-emerald-800',
+    accentBorder: 'border-emerald-400',
+    hint: 'admin@example.com',
+  },
+  MANAGER: {
+    label: 'Manager',
+    sublabel: 'Department Coordinator',
+    icon: <Briefcase className="w-5 h-5" />,
+    accentBg: 'bg-amber-50',
+    accentText: 'text-amber-800',
+    accentBorder: 'border-amber-400',
+    hint: 'disaster.admin@example.com',
+  },
+  VOLUNTEER: {
+    label: 'Volunteer',
+    sublabel: 'Volunteer Coordinator',
+    icon: <Users className="w-5 h-5" />,
+    accentBg: 'bg-sky-50',
+    accentText: 'text-sky-800',
+    accentBorder: 'border-sky-400',
+    hint: 'karthik@example.com',
+  },
+};
 
 export const Login: React.FC = () => {
   const { login, apiFetch } = useAuth();
   const navigate = useNavigate();
 
-  // Step states: 1 = Email/Phone, 2 = Role Preview, 3 = Password
+  const [selectedRole, setSelectedRole] = useState<LoginRole>('ADMIN');
+  // Step states: 1 = Role Select + Email/Phone, 2 = Role Preview, 3 = Password
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -23,6 +64,8 @@ export const Login: React.FC = () => {
     role: string;
     department: string | null;
   } | null>(null);
+
+  const config = ROLE_CONFIG[selectedRole];
 
   const handleStep1Next = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,16 +113,8 @@ export const Login: React.FC = () => {
         body: JSON.stringify({ identifier, password }),
       });
 
-      // Complete login
       login(data.accessToken, data.refreshToken, data.user);
 
-      // If user profile is incomplete (e.g., name or phone missing or default template values), go to profile completion.
-      // Let's assume profile is incomplete if name is blank or placeholder (e.g. "Selvan Karthik" or empty, in seed we have names,
-      // but let's check if name contains 'ChangeMe' or user wants to verify details, or if first login).
-      // For this demo, let's direct to profile completion if the name is generic or phone starts with a placeholder,
-      // or if they want to update details. Let's make a condition: if name is empty or we check if user wants to update it.
-      // Let's add a state to optionally redirect to profile-completion.
-      // If we want to demonstrate the profile completion screen (Step 4), we check if name is empty.
       if (!data.user.name || data.user.name === 'New User') {
         navigate('/complete-profile');
       } else {
@@ -102,17 +137,12 @@ export const Login: React.FC = () => {
     setError('');
   };
 
-  // Convert role tags to Tamil Nadu public service titles
   const getRoleLabel = (role: string) => {
     switch (role) {
-      case 'SUPER_ADMIN':
-        return 'State Administrator';
-      case 'DEPARTMENT_ADMIN':
-        return 'Department Coordinator';
-      case 'VOLUNTEER':
-        return 'Volunteer Coordinator';
-      default:
-        return 'Volunteer';
+      case 'SUPER_ADMIN': return 'State Administrator';
+      case 'DEPARTMENT_ADMIN': return 'Department Coordinator';
+      case 'VOLUNTEER': return 'Volunteer Coordinator';
+      default: return 'Volunteer';
     }
   };
 
@@ -130,52 +160,84 @@ export const Login: React.FC = () => {
       </div>
 
       {/* Main Login Card */}
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-premium border border-primary-mid overflow-hidden min-h-[400px] flex flex-col">
-        {/* Progress Bar indicator */}
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-premium border border-primary-mid overflow-hidden flex flex-col">
+        {/* Progress Bar */}
         <div className="h-1.5 w-full bg-primary-light">
-          <div 
-            className="h-full bg-primary transition-all duration-500 rounded-full" 
+          <div
+            className="h-full bg-primary transition-all duration-500 rounded-full"
             style={{ width: `${(step / 3) * 100}%` }}
           />
         </div>
 
         <div className="p-8 flex-1 flex flex-col justify-between">
-          {/* STEP 1: IDENTIFIER SCREEN */}
+
+          {/* STEP 1: ROLE SELECTOR + IDENTIFIER */}
           {step === 1 && (
-            <form onSubmit={handleStep1Next} className="flex-1 flex flex-col justify-between">
+            <form onSubmit={handleStep1Next} className="flex flex-col gap-6">
+              {/* Role Tabs */}
               <div>
-                <h2 className="text-xl font-bold text-primary mb-2 font-serif text-center">Sign In to Your Account</h2>
-                <p className="text-gray-medium text-center text-sm mb-6">Enter your registered email address or mobile number to continue</p>
-                
+                <p className="text-xs font-bold text-gray-medium uppercase tracking-widest mb-3 text-center">Select Your Role</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {(Object.keys(ROLE_CONFIG) as LoginRole[]).map((role) => {
+                    const rc = ROLE_CONFIG[role];
+                    const isSelected = selectedRole === role;
+                    return (
+                      <button
+                        key={role}
+                        type="button"
+                        onClick={() => { setSelectedRole(role); setError(''); setIdentifier(''); }}
+                        className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border-2 transition-all duration-200 ${
+                          isSelected
+                            ? `${rc.accentBg} ${rc.accentText} ${rc.accentBorder} shadow-md scale-[1.03]`
+                            : 'bg-gray-50 text-gray-medium border-gray-200 hover:border-primary-mid hover:bg-primary-light'
+                        }`}
+                      >
+                        <span className={`p-1.5 rounded-full ${isSelected ? 'bg-white/60' : 'bg-gray-200/60'}`}>
+                          {rc.icon}
+                        </span>
+                        <span className="text-xs font-bold leading-none">{rc.label}</span>
+                        <span className="text-[9px] leading-tight font-medium opacity-70 text-center">{rc.sublabel}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Role-specific Identifier Input */}
+              <div className={`rounded-xl border-2 p-4 transition-all duration-300 ${config.accentBg} ${config.accentBorder}`}>
+                <h2 className={`text-base font-bold font-serif mb-1 ${config.accentText}`}>
+                  Sign in as {config.label}
+                </h2>
+                <p className="text-xs text-gray-medium mb-3">Enter your registered email or mobile number</p>
+
                 {error && (
-                  <div className="mb-4 p-3 bg-danger-light text-danger rounded-lg text-sm flex items-center gap-2 border border-danger/20">
+                  <div className="mb-3 p-2.5 bg-danger-light text-danger rounded-lg text-sm flex items-center gap-2 border border-danger/20">
                     <ShieldAlert className="w-4 h-4 flex-shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-medium uppercase tracking-wider mb-1">Email or Phone Number</label>
-                    <input
-                      type="text"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-border focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-background/30 transition-all font-medium text-gray-dark"
-                      placeholder="e.g. admin@example.com or 9876543210"
-                      value={identifier}
-                      onChange={(e) => setIdentifier(e.target.value)}
-                      disabled={loading}
-                    />
-                  </div>
-                </div>
+                <label className="block text-xs font-semibold text-gray-medium uppercase tracking-wider mb-1">
+                  Email or Phone Number
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-border focus:ring-2 focus:ring-primary focus:border-transparent outline-none bg-white transition-all font-medium text-gray-dark"
+                  placeholder={`e.g. ${config.hint}`}
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
+                  disabled={loading}
+                />
               </div>
 
-              <div className="mt-8 space-y-4">
+              <div className="space-y-3">
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-primary hover:bg-primary-hover text-background font-bold rounded-lg shadow-md border-b-2 border-accent transition-all disabled:opacity-50 flex justify-center items-center"
+                  className="w-full py-3 bg-primary hover:bg-primary-hover text-white font-bold rounded-lg shadow-md border-b-2 border-accent transition-all disabled:opacity-50 flex justify-center items-center gap-2"
                 >
-                  {loading ? 'Verifying...' : 'Next'}
+                  {config.icon}
+                  {loading ? 'Verifying...' : `Continue as ${config.label}`}
                 </button>
                 <div className="text-center text-xs text-gray-medium pt-2 border-t border-gray-light">
                   <span className="block mb-2">New volunteer? Join the platform to get started.</span>
@@ -192,7 +254,7 @@ export const Login: React.FC = () => {
             <div className="flex-1 flex flex-col justify-between">
               <div>
                 <div className="flex items-center mb-6">
-                  <button 
+                  <button
                     onClick={handleBackToStep1}
                     className="p-1 rounded-full hover:bg-gray-light text-primary transition-all mr-2"
                   >
@@ -202,19 +264,20 @@ export const Login: React.FC = () => {
                 </div>
 
                 <div className="text-center mb-6">
-                  {/* Avatar */}
-                  <div className="inline-flex justify-center items-center w-20 h-20 rounded-full bg-primary-light text-primary font-bold text-2xl mb-3 border border-primary/20 shadow-inner">
+                  {/* Role colour ring around avatar */}
+                  <div className={`inline-flex justify-center items-center w-20 h-20 rounded-full font-bold text-2xl mb-3 shadow-inner border-4 ${config.accentBorder} ${config.accentBg} ${config.accentText}`}>
                     {previewUser.name.charAt(0)}
                   </div>
-                  
+
                   <h3 className="text-lg font-bold text-primary font-serif">{previewUser.name}</h3>
                   <p className="text-xs text-gray-medium mb-3">{previewUser.email}</p>
-                  
-                  {/* Role Badge */}
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-accent-light text-accent-hover border border-accent/20 uppercase tracking-wider">
+
+                  {/* Role badge */}
+                  <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border uppercase tracking-wider ${config.accentBg} ${config.accentText} ${config.accentBorder}`}>
+                    {config.icon}
                     {getRoleLabel(previewUser.role)}
                   </span>
-                  
+
                   {previewUser.department && (
                     <p className="text-xs text-primary font-semibold mt-2">
                       Dept: {previewUser.department}
@@ -226,7 +289,7 @@ export const Login: React.FC = () => {
               <div className="mt-6">
                 <button
                   onClick={handleStep2Next}
-                  className="w-full py-3 bg-primary hover:bg-primary-hover text-background font-bold rounded-lg shadow-md border-b-2 border-accent transition-all flex justify-center items-center"
+                  className="w-full py-3 bg-primary hover:bg-primary-hover text-white font-bold rounded-lg shadow-md border-b-2 border-accent transition-all flex justify-center items-center"
                 >
                   Continue
                 </button>
@@ -239,7 +302,7 @@ export const Login: React.FC = () => {
             <form onSubmit={handleStep3Submit} className="flex-1 flex flex-col justify-between">
               <div>
                 <div className="flex items-center mb-4">
-                  <button 
+                  <button
                     onClick={handleBackToStep2}
                     className="p-1 rounded-full hover:bg-gray-light text-primary transition-all mr-2"
                   >
@@ -249,6 +312,11 @@ export const Login: React.FC = () => {
                     <span className="text-xs text-gray-medium">Signing in as</span>
                     <span className="text-sm font-bold text-primary">{previewUser.name}</span>
                   </div>
+                  {/* Role pill on password screen */}
+                  <span className={`ml-auto inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${config.accentBg} ${config.accentText} ${config.accentBorder}`}>
+                    {config.icon}
+                    {config.label}
+                  </span>
                 </div>
 
                 <h2 className="text-xl font-bold text-primary mb-4 font-serif text-center">Enter Password</h2>
@@ -271,6 +339,7 @@ export const Login: React.FC = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         disabled={loading}
+                        autoFocus
                       />
                       <button
                         type="button"
@@ -297,14 +366,23 @@ export const Login: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3 bg-primary hover:bg-primary-hover text-background font-bold rounded-lg shadow-md border-b-2 border-accent transition-all disabled:opacity-50 flex justify-center items-center"
+                  className="w-full py-3 bg-primary hover:bg-primary-hover text-white font-bold rounded-lg shadow-md border-b-2 border-accent transition-all disabled:opacity-50 flex justify-center items-center gap-2"
                 >
-                  {loading ? 'Authenticating...' : 'Sign In'}
+                  {config.icon}
+                  {loading ? 'Authenticating...' : `Sign In as ${config.label}`}
                 </button>
               </div>
             </form>
           )}
+
         </div>
+      </div>
+
+      {/* Quick-login hints */}
+      <div className="mt-4 text-center">
+        <p className="text-[10px] text-gray-medium/70">
+          Demo: All accounts use password <span className="font-bold font-mono">ChangeMe123!</span>
+        </p>
       </div>
     </div>
   );
