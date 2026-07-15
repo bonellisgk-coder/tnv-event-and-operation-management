@@ -147,15 +147,15 @@ export const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12" style={{background: 'linear-gradient(135deg, #EAFAF1 0%, #F5FFF9 50%, #FEFDE7 100%)'}}>
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 sm:py-12" style={{background: 'linear-gradient(135deg, #EAFAF1 0%, #F5FFF9 50%, #FEFDE7 100%)'}}>
       {/* Platform Branding Header */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-4 sm:mb-6">
         <img
           src="/logo.png"
           alt="Tamil Nadu Volunteers Logo"
-          className="w-24 h-24 object-contain mx-auto mb-4 drop-shadow-lg rounded-full bg-white p-1.5 border-2 border-primary-mid shadow-soft"
+          className="w-16 h-16 sm:w-24 sm:h-24 object-contain mx-auto mb-3 sm:mb-4 drop-shadow-lg rounded-full bg-white p-1.5 border-2 border-primary-mid shadow-soft"
         />
-        <h1 className="text-3xl font-bold text-primary font-serif tracking-wide">தமிழ்நாடு தன்னார்வலர்கள்</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-primary font-serif tracking-wide leading-tight">தமிழ்நாடு தன்னார்வலர்கள்</h1>
         <p className="text-accent-hover font-sans font-bold tracking-widest text-xs uppercase mt-1">Volunteer Management Platform</p>
       </div>
 
