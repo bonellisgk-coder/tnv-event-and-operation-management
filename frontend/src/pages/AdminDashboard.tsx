@@ -66,7 +66,7 @@ export const AdminDashboard: React.FC = () => {
       const [eventsData, deptsData, volsData] = await Promise.all([
         apiFetch('/events'),
         apiFetch('/departments'),
-        apiFetch('/coordinators') // Fetches volunteers & dept admins
+        apiFetch('/auth/coordinators') // Fetches volunteers & dept admins
       ]);
       setEvents(eventsData);
       setDepartments(deptsData);

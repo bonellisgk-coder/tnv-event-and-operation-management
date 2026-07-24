@@ -69,7 +69,7 @@ export const ManagerDashboard: React.FC = () => {
       setLoading(true);
       const [eventsData, volsData, tasksData] = await Promise.all([
         apiFetch('/events'),
-        apiFetch('/coordinators'), // Scoped by backend to department volunteers
+        apiFetch('/auth/coordinators'), // Scoped by backend to department volunteers
         apiFetch('/tasks') // Scoped by backend to department tasks
       ]);
       setEvents(eventsData);
