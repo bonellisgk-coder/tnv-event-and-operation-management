@@ -14,6 +14,7 @@ import { Attendance } from './pages/Attendance';
 import { CheckIn } from './pages/CheckIn';
 import { Tasks } from './pages/Tasks';
 import { Certificates } from './pages/Certificates';
+import { StrategyPlan } from './pages/StrategyPlan';
 
 import { Register } from './pages/Register';
 
@@ -113,6 +114,16 @@ export const AppContent: React.FC = () => {
           <PrivateRoute>
             <DashboardLayout>
               <Tasks />
+            </DashboardLayout>
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/dashboard/strategy"
+        element={
+          <PrivateRoute>
+            <DashboardLayout>
+              <StrategyPlan />
             </DashboardLayout>
           </PrivateRoute>
         }

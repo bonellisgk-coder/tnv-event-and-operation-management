@@ -5,6 +5,7 @@ import {
   Calendar, 
   CheckSquare, 
   Award, 
+  Compass,
   LogOut, 
   Menu, 
   X,
@@ -26,6 +27,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
   const menuItems = [
     { name: 'Events', path: '/dashboard', icon: Calendar, roles: ['SUPER_ADMIN', 'DEPARTMENT_ADMIN', 'VOLUNTEER'] },
     { name: 'Tasks', path: '/dashboard/tasks', icon: CheckSquare, roles: ['SUPER_ADMIN', 'DEPARTMENT_ADMIN', 'VOLUNTEER'] },
+    { name: 'Strategy Plan', path: '/dashboard/strategy', icon: Compass, roles: ['SUPER_ADMIN', 'DEPARTMENT_ADMIN', 'VOLUNTEER'] },
     { name: 'Certificates', path: '/dashboard/certificates', icon: Award, roles: ['SUPER_ADMIN', 'DEPARTMENT_ADMIN'] },
   ];
 
