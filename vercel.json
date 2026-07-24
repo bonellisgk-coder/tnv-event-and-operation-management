@@ -1,16 +1,16 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm run build",
-  "installCommand": "cd frontend && npm install",
+  "buildCommand": "cd backend && npx prisma generate && cd ../frontend && npm run build",
+  "installCommand": "cd backend && npm install && cd ../frontend && npm install",
   "outputDirectory": "frontend/dist",
   "rewrites": [
     {
-      "source": "/api/:path*",
-      "destination": "https://YOUR-BACKEND-URL.railway.app/api/:path*"
+      "source": "/api/(.*)",
+      "destination": "/api"
     },
     {
       "source": "/(.*)",
-      "destination": "/frontend/$1"
+      "destination": "/index.html"
     }
   ]
 }

@@ -11,10 +11,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-// Setup directories if missing
+// Setup directories if missing (safely handle read-only serverless filesystems)
 const assetsDir = path.join(__dirname, '../assets/templates');
 if (!fs.existsSync(assetsDir)) {
-  fs.mkdirSync(assetsDir, { recursive: true });
+  try {
+    fs.mkdirSync(assetsDir, { recursive: true });
+  } catch (e) {
+    // Ignore read-only filesystem errors in serverless
+  }
 }
 
 // CORS Config
@@ -54,7 +58,11 @@ app.get('/api/health', (req: express.Request, res: express.Response) => {
   return res.json({ status: 'ok', timestamp: new Date() });
 });
 
-// Start Server
-app.listen(PORT, () => {
-  console.log(`Tamil Nadu Volunteer Backend running on port ${PORT}`);
-});
+// Start Server locally if not running on Vercel Serverless
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Tamil Nadu Volunteer Backend running on port ${PORT}`);
+  });
+}
+
+export default app;

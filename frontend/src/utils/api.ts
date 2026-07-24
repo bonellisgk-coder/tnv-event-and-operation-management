@@ -1,5 +1,7 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
-export const SERVER_BASE_URL = API_BASE_URL.replace(/\/api\/?$/, '');
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+export const SERVER_BASE_URL = API_BASE_URL.startsWith('http')
+  ? API_BASE_URL.replace(/\/api\/?$/, '')
+  : '';
 
 export async function safeParseJson(response: Response): Promise<any> {
   const contentType = response.headers.get('content-type');
