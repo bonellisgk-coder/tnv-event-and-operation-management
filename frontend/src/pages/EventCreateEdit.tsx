@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../utils/api';
 import { ArrowLeft, Save, Trash2, Calendar, MapPin, Tag, QrCode } from 'lucide-react';
 
 export const EventCreateEdit: React.FC = () => {
@@ -126,7 +127,7 @@ export const EventCreateEdit: React.FC = () => {
 
   const downloadQrCard = () => {
     if (!id) return;
-    const url = `http://localhost:4000/api/events/${id}/qr-card`;
+    const url = `${API_BASE_URL}/events/${id}/qr-card`;
     window.open(url, '_blank');
   };
 

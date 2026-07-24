@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL, safeParseJson } from '../utils/api';
 import {
   User, Mail, Phone, Lock, Eye, EyeOff, ArrowRight,
   CheckCircle, AlertCircle, Building2, ChevronLeft,
@@ -77,7 +78,6 @@ export const Register: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
   const config = ROLE_CONFIG[selectedRole];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -137,9 +137,7 @@ export const Register: React.FC = () => {
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Registration failed');
-
+      const data = await safeParseJson(res);
       login(data.accessToken, data.refreshToken, data.user);
       setStep('success');
       setTimeout(() => navigate('/dashboard'), 2000);

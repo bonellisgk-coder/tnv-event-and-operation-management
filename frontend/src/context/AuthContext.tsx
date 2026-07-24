@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { API_BASE_URL, safeParseJson } from '../utils/api';
 
 export interface User {
   id: string;
@@ -21,8 +22,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -115,10 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     }
 
-    const data = await response.json();
-    if (!response.ok) {
-      throw new Error(data.error || 'Request failed');
-    }
+    const data = await safeParseJson(response);
     return data;
   };
 

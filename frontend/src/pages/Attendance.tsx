@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../utils/api';
 import { 
   ArrowLeft, 
   Search, 
@@ -130,15 +131,6 @@ export const Attendance: React.FC = () => {
   };
 
   const downloadExcel = () => {
-    const url = `http://localhost:4000/api/exports/excel/${eventId}`;
-    // Fetch needs authentication header, so instead of a standard link we can fetch it,
-    // or let it open in a new tab if authorization allows. Since exports check JWT,
-    // we can request it with the auth token. Let's make a trigger that fetches and downloads.
-    // However, since we cannot easily pass authorization headers inside `window.open`,
-    // we can construct a signed URL or retrieve the token from localStorage and append it as a query param,
-    // or since this is a local app, we can pass the token as a query param in the download endpoint!
-    // Yes! Let's allow passing token as a query parameter or just use browser fetch and trigger blob download.
-    // Fetching the blob is standard, clean, and fully supports Authorization headers! Let's write that.
     triggerBlobDownload(`/exports/excel/${eventId}`, `Attendees-${event?.slug}.xlsx`);
   };
 
@@ -149,7 +141,7 @@ export const Attendance: React.FC = () => {
   const triggerBlobDownload = async (endpoint: string, filename: string) => {
     try {
       const storedToken = localStorage.getItem('tnv_token');
-      const response = await fetch(`http://localhost:4000/api${endpoint}`, {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
         headers: {
           'Authorization': `Bearer ${storedToken}`
         }

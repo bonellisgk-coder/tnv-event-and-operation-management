@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL, SERVER_BASE_URL, safeParseJson } from '../utils/api';
 import { Award, Upload, ShieldAlert, CheckCircle, Download } from 'lucide-react';
 
 interface Event {
@@ -67,7 +68,7 @@ export const Certificates: React.FC = () => {
       const data = await apiFetch(`/certificates/templates/${eventId}`);
       
       // Load details
-      setTemplateImage(`http://localhost:4000${data.imageUrl}`);
+      setTemplateImage(`${SERVER_BASE_URL}${data.imageUrl}`);
       
       // Parse coordinates
       setNameX(data.namePosition.x);
@@ -158,14 +159,14 @@ export const Certificates: React.FC = () => {
 
     try {
       const storedToken = localStorage.getItem('tnv_token');
-      const response = await fetch(`http://localhost:4000/api/certificates/generate-bulk/${selectedEventId}`, {
+      const response = await fetch(`${API_BASE_URL}/certificates/generate-bulk/${selectedEventId}`, {
         headers: {
           'Authorization': `Bearer ${storedToken}`
         }
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await safeParseJson(response);
         throw new Error(errorData.error || 'Failed to generate bulk ZIP');
       }
 
