@@ -58,12 +58,11 @@ app.get('/api/health', (req: express.Request, res: express.Response) => {
   return res.json({ status: 'ok', timestamp: new Date() });
 });
 
-// Export app for serverless (Vercel) — do NOT call app.listen() here
-export default app;
-
-// Only start HTTP server when running directly (local dev via ts-node-dev)
-if (require.main === module) {
+// Start Server locally if not running on Vercel Serverless
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`Tamil Nadu Volunteer Backend running on port ${PORT}`);
   });
 }
+
+export default app;

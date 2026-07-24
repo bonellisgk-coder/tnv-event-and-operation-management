@@ -1,12 +1,15 @@
 {
   "version": 2,
-  "buildCommand": "npx prisma generate && cd frontend && npm run build",
+  "framework": "vite",
+  "buildCommand": "cd backend && npx prisma generate && cd ../frontend && npm run build",
   "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/index.ts": {
+      "runtime": "nodejs20.x",
+      "includeFiles": "backend/prisma/schema.prisma"
+    }
+  },
   "rewrites": [
-    {
-      "source": "/api/health",
-      "destination": "/api/health"
-    },
     {
       "source": "/api/(.*)",
       "destination": "/api"
