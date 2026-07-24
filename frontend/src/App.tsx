@@ -8,6 +8,7 @@ import { ProfileCompletion } from './pages/ProfileCompletion';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { Events } from './pages/Events';
+import { Dashboard } from './pages/Dashboard';
 import { EventCreateEdit } from './pages/EventCreateEdit';
 import { Attendance } from './pages/Attendance';
 import { CheckIn } from './pages/CheckIn';
@@ -61,7 +62,7 @@ export const AppContent: React.FC = () => {
         element={
           <PrivateRoute>
             <DashboardLayout>
-              <Events />
+              <Dashboard />
             </DashboardLayout>
           </PrivateRoute>
         }

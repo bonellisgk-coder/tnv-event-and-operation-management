@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -7,19 +7,51 @@ generator client {
   provider = "prisma-client-js"
 }
 
+enum Role {
+  SUPER_ADMIN
+  DEPARTMENT_ADMIN
+  VOLUNTEER
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum ParticipantStatus {
+  PENDING
+  PRESENT
+  ABSENT
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+}
+
 model User {
-  id                 String               @id @default(uuid())
-  name               String
-  email              String               @unique
-  phone              String               @unique
-  passwordHash       String
-  role               String               // Replaced enum Role
-  departmentId       String?
-  department         Department?          @relation(fields: [departmentId], references: [id])
-  tasks              Task[]               @relation("UserTasks")
+  id                  String               @id @default(uuid())
+  name                String
+  email               String               @unique
+  phone               String               @unique
+  passwordHash        String
+  role                Role
+  departmentId        String?
+  department          Department?          @relation(fields: [departmentId], references: [id])
+  tasks               Task[]               @relation("UserTasks")
   passwordResetTokens PasswordResetToken[]
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 }
 
 model Department {
@@ -32,24 +64,24 @@ model Department {
 }
 
 model Event {
-  id                  String               @id @default(uuid())
-  slug                String               @unique
-  title               String
-  description         String
-  date                DateTime
-  startTime           String
-  endTime             String
-  venue               String
-  departmentId        String?
-  department          Department?          @relation(fields: [departmentId], references: [id])
-  type                String
-  status              String               @default("DRAFT") // Replaced enum EventStatus
-  qrCodeUrl           String?
-  checkinEnabled      Boolean              @default(false)
-  participants        Participant[]
+  id                   String               @id @default(uuid())
+  slug                 String               @unique
+  title                String
+  description          String
+  date                 DateTime
+  startTime            String
+  endTime              String
+  venue                String
+  departmentId         String?
+  department           Department?          @relation(fields: [departmentId], references: [id])
+  type                 String
+  status               EventStatus          @default(DRAFT)
+  qrCodeUrl            String?
+  checkinEnabled       Boolean              @default(false)
+  participants         Participant[]
   certificateTemplates CertificateTemplate[]
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
 }
 
 model Participant {
@@ -59,7 +91,7 @@ model Participant {
   name              String
   email             String
   phone             String
-  status            String             @default("PENDING") // Replaced enum ParticipantStatus
+  status            ParticipantStatus  @default(PENDING)
   editToken         String             @unique
   editTokenExpires  DateTime
   checkinAt         DateTime?
@@ -87,9 +119,9 @@ model Task {
   description String
   assigneeId  String?
   assignee    User?        @relation("UserTasks", fields: [assigneeId], references: [id])
-  priority    String       @default("MEDIUM") // Replaced enum TaskPriority
+  priority    TaskPriority @default(MEDIUM)
   deadline    DateTime
-  status      String       @default("TODO") // Replaced enum TaskStatus
+  status      TaskStatus   @default(TODO)
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 }
