@@ -12,7 +12,11 @@ const router = Router();
 // Create uploads directory for certificate templates if not exists
 const CERT_TEMPLATES_DIR = path.join(__dirname, '../../assets/templates');
 if (!fs.existsSync(CERT_TEMPLATES_DIR)) {
-  fs.mkdirSync(CERT_TEMPLATES_DIR, { recursive: true });
+  try {
+    fs.mkdirSync(CERT_TEMPLATES_DIR, { recursive: true });
+  } catch (e) {
+    // Ignore in serverless/read-only environments
+  }
 }
 
 // 1. Create or Update Certificate Template (Admins)
