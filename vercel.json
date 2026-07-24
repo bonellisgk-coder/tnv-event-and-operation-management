@@ -2,6 +2,11 @@
   "version": 2,
   "buildCommand": "cd backend && npx prisma generate && npm run build && cd ../frontend && npm run build",
   "outputDirectory": "frontend/dist",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "backend/dist/**"
+    }
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",

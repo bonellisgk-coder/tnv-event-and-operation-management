@@ -1,4 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const app = require('../backend/dist/index').default;
+const mod = require('../backend/dist/index');
+const app = mod.default || mod;
 
 module.exports = app;
