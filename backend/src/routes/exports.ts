@@ -2,8 +2,6 @@ import { Router, Response } from 'express';
 import { prisma } from '../utils/db';
 import { authenticateJWT, requireRoles, AuthRequest } from '../middleware/auth';
 import { ParticipantStatus, Role } from '@prisma/client';
-import * as ExcelJS from 'exceljs';
-import PDFDocument from 'pdfkit';
 
 const router = Router();
 
@@ -34,6 +32,13 @@ router.get('/excel/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEP
       orderBy: { name: 'asc' }
     });
 
+    // Dynamic import — not available in Vercel serverless (returns 503)
+    let ExcelJS: any;
+    try {
+      ExcelJS = await import('exceljs');
+    } catch {
+      return res.status(503).json({ error: 'Excel export not available in this environment' });
+    }
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Attendees');
 
@@ -182,6 +187,14 @@ router.get('/pdf/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEPAR
       orderBy: { name: 'asc' }
     });
 
+    // Dynamic import — not available in Vercel serverless (returns 503)
+    let PDFDocument: any;
+    try {
+      const pdfkit = await import('pdfkit');
+      PDFDocument = pdfkit.default || pdfkit;
+    } catch {
+      return res.status(503).json({ error: 'PDF export not available in this environment' });
+    }
     // Create PDF Document
     const doc = new PDFDocument({ margin: 40, size: 'A4' });
 

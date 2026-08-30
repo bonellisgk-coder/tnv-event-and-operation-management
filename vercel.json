@@ -1,7 +1,6 @@
 {
   "version": 2,
-  "framework": "vite",
-  "installCommand": "npm install --ignore-scripts && npm install --prefix frontend",
+  "installCommand": "npm install",
   "buildCommand": "npx prisma generate --schema=backend/prisma/schema.prisma && npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
   "functions": {
