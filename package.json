@@ -6,7 +6,6 @@
     "build": "npx prisma generate --schema=backend/prisma/schema.prisma && npm run build --prefix frontend"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.58",
     "@prisma/client": "^5.12.1",
     "archiver": "^6.0.2",
     "bcryptjs": "^2.4.3",
