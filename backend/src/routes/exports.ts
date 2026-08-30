@@ -75,7 +75,7 @@ router.get('/excel/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEP
     worksheet.addRow(headers);
     const headerRow = worksheet.getRow(4);
     headerRow.height = 25;
-    headerRow.eachCell((cell) => {
+    headerRow.eachCell((cell: any) => {
       cell.font = { name: 'Arial', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
       cell.fill = {
         type: 'pattern',
@@ -109,7 +109,7 @@ router.get('/excel/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEP
 
       // zebra striping and borders
       const isEven = index % 2 === 0;
-      row.eachCell((cell) => {
+      row.eachCell((cell: any) => {
         cell.font = { name: 'Arial', size: 10 };
         cell.border = {
           bottom: { style: 'thin', color: { argb: 'FFEFEAE0' } }
@@ -141,9 +141,9 @@ router.get('/excel/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEP
     });
 
     // Auto-fit columns
-    worksheet.columns.forEach(column => {
+    worksheet.columns.forEach((column: any) => {
       let maxLen = 0;
-      column.eachCell && column.eachCell({ includeEmpty: true }, cell => {
+      column.eachCell && column.eachCell({ includeEmpty: true }, (cell: any) => {
         const val = cell.value ? String(cell.value) : '';
         if (val.length > maxLen) maxLen = val.length;
       });
