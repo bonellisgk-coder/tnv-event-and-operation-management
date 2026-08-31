@@ -8,24 +8,31 @@ const SMTP_USER = process.env.SMTP_USER || '';
 const SMTP_PASS = process.env.SMTP_PASS || '';
 const SMTP_FROM = process.env.SMTP_FROM || '"TN Volunteer Platform" <no-reply@volunteer.tn.gov.in>';
 
-// Create local folder for fallback email logging
-const SENT_EMAILS_DIR = path.join(__dirname, '../../sent_emails');
-if (!fs.existsSync(SENT_EMAILS_DIR)) {
-  fs.mkdirSync(SENT_EMAILS_DIR, { recursive: true });
+// Create local folder for fallback email logging (safely handle read-only serverless filesystems)
+const SENT_EMAILS_DIR = process.env.VERCEL ? '/tmp/sent_emails' : path.join(__dirname, '../../sent_emails');
+try {
+  if (!fs.existsSync(SENT_EMAILS_DIR)) {
+    fs.mkdirSync(SENT_EMAILS_DIR, { recursive: true });
+  }
+} catch (e) {
+  // Ignore read-only filesystem errors in serverless
 }
 
 // Logo path
 const LOGO_PATH = path.join(__dirname, '../../assets/logo.png');
-// Create assets dir if not exists
-const ASSETS_DIR = path.join(__dirname, '../../assets');
-if (!fs.existsSync(ASSETS_DIR)) {
-  fs.mkdirSync(ASSETS_DIR, { recursive: true });
-}
+const ASSETS_DIR = process.env.VERCEL ? '/tmp/assets' : path.join(__dirname, '../../assets');
+try {
+  if (!fs.existsSync(ASSETS_DIR)) {
+    fs.mkdirSync(ASSETS_DIR, { recursive: true });
+  }
 
-// Create a dummy transparent pixel logo if not exists
-if (!fs.existsSync(LOGO_PATH)) {
-  const dummyPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
-  fs.writeFileSync(LOGO_PATH, Buffer.from(dummyPngBase64, 'base64'));
+  // Create a dummy transparent pixel logo if not exists
+  if (!fs.existsSync(LOGO_PATH)) {
+    const dummyPngBase64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+    fs.writeFileSync(LOGO_PATH, Buffer.from(dummyPngBase64, 'base64'));
+  }
+} catch (e) {
+  // Ignore read-only filesystem errors in serverless
 }
 
 let transporter: nodemailer.Transporter;
@@ -172,11 +179,14 @@ export async function sendEmail({ to, subject, html }: EmailOptions): Promise<vo
       await transporter.sendMail(mailOptions);
       console.log(`Email successfully sent to ${to}`);
     } else {
-      // Offline/dev fallback: Save email content to a file for previewing
-      const filename = `${Date.now()}-${to.replace(/[^a-zA-Z0-9]/g, '_')}.html`;
-      const filePath = path.join(SENT_EMAILS_DIR, filename);
-      fs.writeFileSync(filePath, html);
-      console.log(`[Email Mocked] Saved email to ${filePath}`);
+      try {
+        const filename = `${Date.now()}-${to.replace(/[^a-zA-Z0-9]/g, '_')}.html`;
+        const filePath = path.join(SENT_EMAILS_DIR, filename);
+        fs.writeFileSync(filePath, html);
+        console.log(`[Email Mocked] Saved email to ${filePath}`);
+      } catch (e) {
+        console.log(`[Email Mocked] Email generated for ${to}: ${subject}`);
+      }
     }
   } catch (error) {
     console.error('Error sending email, saving to fallback local folder:', error);
