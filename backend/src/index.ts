@@ -4,6 +4,14 @@ import dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
 
+// Catch unhandled promise rejections before they kill the Lambda
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[UNHANDLED REJECTION]', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[UNCAUGHT EXCEPTION]', err);
+});
+
 // Load Environment variables
 dotenv.config();
 
@@ -55,7 +63,27 @@ app.use('/api/exports', exportsRouter);
 
 // Health Check
 app.get('/api/health', (req: express.Request, res: express.Response) => {
-  return res.json({ status: 'ok', timestamp: new Date() });
+  return res.json({ status: 'ok', serverless: !!process.env.VERCEL, timestamp: new Date() });
+});
+
+// Debug endpoint — returns the actual error for troubleshooting
+app.get('/api/debug', async (req: express.Request, res: express.Response) => {
+  const info: any = {
+    node: process.version,
+    env: process.env.NODE_ENV,
+    vercel: !!process.env.VERCEL,
+    database_url_set: !!process.env.DATABASE_URL,
+    timestamp: new Date(),
+  };
+  try {
+    const { prisma } = await import('./utils/db');
+    await (prisma as any).$queryRaw`SELECT 1`;
+    info.db = 'connected';
+  } catch (err: any) {
+    info.db = 'failed';
+    info.db_error = err?.message || String(err);
+  }
+  return res.json(info);
 });
 
 // Start Server locally if not running on Vercel Serverless
