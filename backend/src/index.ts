@@ -74,11 +74,11 @@ app.get('/api/debug', (req: express.Request, res: express.Response) => {
     vercel: !!process.env.VERCEL,
     database_url_set: !!process.env.DATABASE_URL,
     timestamp: new Date(),
-    prisma_path: require.resolve('./generated/prisma').substring(0, 80),
   };
   try {
+    info.prisma_path = require.resolve('@prisma/client').substring(0, 80);
     // Try loading the Prisma module synchronously to check if binary is present
-    require('./generated/prisma');
+    require('@prisma/client');
     info.prisma_module = 'loaded';
   } catch (err: any) {
     info.prisma_module = 'failed';
