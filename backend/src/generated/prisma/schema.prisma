@@ -66,8 +66,8 @@ model Department {
 }
 
 model Event {
-  id                   String               @id @default(uuid())
-  slug                 String               @unique
+  id                   String                @id @default(uuid())
+  slug                 String                @unique
   title                String
   description          String
   date                 DateTime
@@ -75,15 +75,15 @@ model Event {
   endTime              String
   venue                String
   departmentId         String?
-  department           Department?          @relation(fields: [departmentId], references: [id])
+  department           Department?           @relation(fields: [departmentId], references: [id])
   type                 String
-  status               EventStatus          @default(DRAFT)
+  status               EventStatus           @default(DRAFT)
   qrCodeUrl            String?
-  checkinEnabled       Boolean              @default(false)
+  checkinEnabled       Boolean               @default(false)
   participants         Participant[]
   certificateTemplates CertificateTemplate[]
-  createdAt            DateTime             @default(now())
-  updatedAt            DateTime             @updatedAt
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
 }
 
 model Participant {
@@ -133,8 +133,8 @@ model CertificateTemplate {
   eventId      String   @unique
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   imageUrl     String
-  namePosition String   // Store as JSON or string like "x,y,fontSize"
-  qrPosition   String   // Store as JSON or string like "x,y,size"
+  namePosition String // Store as JSON or string like "x,y,fontSize"
+  qrPosition   String // Store as JSON or string like "x,y,size"
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }

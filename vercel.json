@@ -8,7 +8,7 @@
       "runtime": "nodejs20.x",
       "memory": 1024,
       "maxDuration": 30,
-      "includeFiles": "backend/node_modules/.prisma/**"
+      "includeFiles": "backend/src/generated/prisma/**"
     }
   },
   "rewrites": [
