@@ -66,24 +66,31 @@ app.get('/api/health', (req: express.Request, res: express.Response) => {
   return res.json({ status: 'ok', serverless: !!process.env.VERCEL, timestamp: new Date() });
 });
 
-// Debug endpoint — returns the actual error for troubleshooting
-app.get('/api/debug', async (req: express.Request, res: express.Response) => {
+// Debug endpoint — returns environment info and module load status
+app.get('/api/debug', (req: express.Request, res: express.Response) => {
   const info: any = {
     node: process.version,
     env: process.env.NODE_ENV,
     vercel: !!process.env.VERCEL,
     database_url_set: !!process.env.DATABASE_URL,
     timestamp: new Date(),
+    prisma_path: require.resolve('./generated/prisma').substring(0, 80),
   };
   try {
-    const { prisma } = await import('./utils/db');
-    await (prisma as any).$queryRaw`SELECT 1`;
-    info.db = 'connected';
+    // Try loading the Prisma module synchronously to check if binary is present
+    require('./generated/prisma');
+    info.prisma_module = 'loaded';
   } catch (err: any) {
-    info.db = 'failed';
-    info.db_error = err?.message || String(err);
+    info.prisma_module = 'failed';
+    info.prisma_error = err?.message || String(err);
   }
   return res.json(info);
+});
+
+// Global error handler — catches any uncaught route errors
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('[EXPRESS ERROR]', err?.message || err);
+  res.status(500).json({ error: err?.message || 'Internal server error' });
 });
 
 // Start Server locally if not running on Vercel Serverless

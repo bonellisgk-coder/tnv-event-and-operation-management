@@ -24,21 +24,25 @@ router.post('/login/verify', async (req: Request, res: Response) => {
     'disaster.admin@example.com': { name: 'Dr. Radhakrishnan IAS', email: 'disaster.admin@example.com', phone: '9876543211', role: 'DEPARTMENT_ADMIN', department: 'Disaster Management' },
     'eco.admin@example.com': { name: 'Tmt. Supriya Sahu IAS', email: 'eco.admin@example.com', phone: '9876543212', role: 'DEPARTMENT_ADMIN', department: 'Environment and Climate Change' },
     'karthik@example.com': { name: 'Selvan Karthik', email: 'karthik@example.com', phone: '9876543213', role: 'VOLUNTEER', department: 'Environment and Climate Change' },
-    'bonellisgk369@gmail.com': { name: 'Admin User', email: 'bonellisgk369@gmail.com', phone: '9876543299', role: 'SUPER_ADMIN', department: null }
+    'bonellisgk369@gmail.com': { name: 'Admin User', email: 'bonellisgk369@gmail.com', phone: '9876543299', role: 'SUPER_ADMIN', department: null },
+    'bonellisgk@gmail.com': { name: 'Admin User', email: 'bonellisgk@gmail.com', phone: '9876543298', role: 'SUPER_ADMIN', department: null }
   };
 
+  // Helper: Prisma query with 5s timeout to prevent Lambda hang
+  const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
+    Promise.race([
+      promise,
+      new Promise<T>((_, reject) => setTimeout(() => reject(new Error('DB_TIMEOUT')), ms))
+    ]);
+
   try {
-    const user = await prisma.user.findFirst({
-      where: {
-        OR: [
-          { email: cleanId },
-          { phone: identifier.trim() }
-        ]
-      },
-      include: {
-        department: true
-      }
-    });
+    const user = await withTimeout(
+      prisma.user.findFirst({
+        where: { OR: [{ email: cleanId }, { phone: identifier.trim() }] },
+        include: { department: true }
+      }),
+      5000
+    );
 
     if (user) {
       return res.json({
@@ -55,8 +59,8 @@ router.post('/login/verify', async (req: Request, res: Response) => {
     }
 
     return res.status(404).json({ error: 'Account not found with this email/phone' });
-  } catch (error) {
-    console.error('Verify login error:', error);
+  } catch (error: any) {
+    console.error('Verify login error:', error?.message || error);
     if (demoAccounts[cleanId]) {
       return res.json(demoAccounts[cleanId]);
     }
