@@ -63,7 +63,7 @@ app.use('/api/exports', exportsRouter);
 
 // Health Check
 app.get('/api/health', (req: express.Request, res: express.Response) => {
-  return res.json({ status: 'ok', serverless: !!process.env.VERCEL, timestamp: new Date() });
+  return res.json({ status: 'ok', version: 'v-postinstall', serverless: !!process.env.VERCEL, timestamp: new Date() });
 });
 
 // Debug endpoint — returns environment info and module load status
