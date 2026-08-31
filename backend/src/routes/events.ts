@@ -3,7 +3,6 @@ import { prisma } from '../utils/db';
 import { authenticateJWT, requireRoles, AuthRequest } from '../middleware/auth';
 import { EventStatus, Role } from '@prisma/client';
 import { generateQRCodeDataUrl } from '../services/qr';
-import { createCanvas, loadImage } from '@napi-rs/canvas';
 import * as QRCode from 'qrcode';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -313,6 +312,15 @@ router.get('/:id/qr-card', async (req, res) => {
     // Card details
     const cardWidth = 800;
     const cardHeight = 1100;
+    let createCanvas: any, loadImage: any;
+    try {
+      const canvasMod = await import('@napi-rs/canvas');
+      createCanvas = canvasMod.createCanvas;
+      loadImage = canvasMod.loadImage;
+    } catch {
+      return res.status(503).json({ error: 'QR Card image generation is not available in this environment' });
+    }
+
     const canvas = createCanvas(cardWidth, cardHeight);
     const ctx = canvas.getContext('2d');
 
