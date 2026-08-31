@@ -12,7 +12,6 @@
     "prisma:seed": "ts-node prisma/seed.ts"
   },
   "dependencies": {
-    "@napi-rs/canvas": "^0.1.58",
     "@prisma/client": "^5.12.1",
     "archiver": "^6.0.2",
     "bcryptjs": "^2.4.3",
@@ -25,6 +24,9 @@
     "pdfkit": "^0.15.0",
     "pg": "^8.22.0",
     "qrcode": "^1.5.3"
+  },
+  "optionalDependencies": {
+    "@napi-rs/canvas": "^0.1.58"
   },
   "devDependencies": {
     "@types/archiver": "^6.0.2",

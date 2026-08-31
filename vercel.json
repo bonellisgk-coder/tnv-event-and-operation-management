@@ -6,7 +6,10 @@
   "functions": {
     "api/index.ts": {
       "runtime": "nodejs20.x",
-      "includeFiles": "backend/prisma/schema.prisma"
+      "includeFiles": [
+        "backend/prisma/schema.prisma",
+        "node_modules/.prisma/client/**"
+      ]
     }
   },
   "rewrites": [
