@@ -1,3 +1,2 @@
-# Exclude Windows-only native binaries (not needed on Vercel Linux)
-query_engine-windows.dll.node*
-# Keep Linux binaries for Vercel deployment
+# Exclude native binary engine files - regenerated at build time per platform
+*.node
