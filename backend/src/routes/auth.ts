@@ -18,16 +18,6 @@ router.post('/login/verify', async (req: Request, res: Response) => {
 
   const cleanId = identifier.trim().toLowerCase();
 
-  const demoAccounts: Record<string, any> = {
-    'admin@example.com': { name: 'Thiru. K. Anbarasan', email: 'admin@example.com', phone: '9876543210', role: 'SUPER_ADMIN', department: null },
-    'admin@tnv.gov.in': { name: 'Thiru. K. Anbarasan', email: 'admin@tnv.gov.in', phone: '9876543210', role: 'SUPER_ADMIN', department: null },
-    'disaster.admin@example.com': { name: 'Dr. Radhakrishnan IAS', email: 'disaster.admin@example.com', phone: '9876543211', role: 'DEPARTMENT_ADMIN', department: 'Disaster Management' },
-    'eco.admin@example.com': { name: 'Tmt. Supriya Sahu IAS', email: 'eco.admin@example.com', phone: '9876543212', role: 'DEPARTMENT_ADMIN', department: 'Environment and Climate Change' },
-    'karthik@example.com': { name: 'Selvan Karthik', email: 'karthik@example.com', phone: '9876543213', role: 'VOLUNTEER', department: 'Environment and Climate Change' },
-    'bonellisgk369@gmail.com': { name: 'Admin User', email: 'bonellisgk369@gmail.com', phone: '9876543299', role: 'SUPER_ADMIN', department: null },
-    'bonellisgk@gmail.com': { name: 'Admin User', email: 'bonellisgk@gmail.com', phone: '9876543298', role: 'SUPER_ADMIN', department: null }
-  };
-
   // Helper: Prisma query with 5s timeout to prevent Lambda hang
   const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> =>
     Promise.race([
@@ -54,17 +44,10 @@ router.post('/login/verify', async (req: Request, res: Response) => {
       });
     }
 
-    if (demoAccounts[cleanId]) {
-      return res.json(demoAccounts[cleanId]);
-    }
-
     return res.status(404).json({ error: 'Account not found with this email/phone' });
   } catch (error: any) {
     console.error('Verify login error:', error?.message || error);
-    if (demoAccounts[cleanId]) {
-      return res.json(demoAccounts[cleanId]);
-    }
-    return res.status(500).json({ error: 'Database connection failed. Please verify DATABASE_URL.' });
+    return res.status(503).json({ error: 'Authentication service is temporarily unavailable.' });
   }
 });
 
@@ -142,15 +125,6 @@ router.post('/login/authenticate', async (req: Request, res: Response) => {
 
   const cleanId = identifier.trim().toLowerCase();
 
-  const demoUsers: Record<string, any> = {
-    'admin@example.com': { id: 'demo-admin-1', name: 'Thiru. K. Anbarasan', email: 'admin@example.com', phone: '9876543210', role: 'SUPER_ADMIN', departmentId: null },
-    'admin@tnv.gov.in': { id: 'demo-admin-1', name: 'Thiru. K. Anbarasan', email: 'admin@tnv.gov.in', phone: '9876543210', role: 'SUPER_ADMIN', departmentId: null },
-    'disaster.admin@example.com': { id: 'demo-admin-2', name: 'Dr. Radhakrishnan IAS', email: 'disaster.admin@example.com', phone: '9876543211', role: 'DEPARTMENT_ADMIN', departmentId: 'dept-disaster' },
-    'eco.admin@example.com': { id: 'demo-admin-3', name: 'Tmt. Supriya Sahu IAS', email: 'eco.admin@example.com', phone: '9876543212', role: 'DEPARTMENT_ADMIN', departmentId: 'dept-eco' },
-    'karthik@example.com': { id: 'demo-vol-1', name: 'Selvan Karthik', email: 'karthik@example.com', phone: '9876543213', role: 'VOLUNTEER', departmentId: 'dept-eco' },
-    'bonellisgk369@gmail.com': { id: 'demo-admin-aravind', name: 'Admin User', email: 'bonellisgk369@gmail.com', phone: '9876543299', role: 'SUPER_ADMIN', departmentId: null }
-  };
-
   try {
     const user = await prisma.user.findFirst({
       where: {
@@ -190,41 +164,10 @@ router.post('/login/authenticate', async (req: Request, res: Response) => {
       });
     }
 
-    const demoUser = demoUsers[cleanId];
-    if (demoUser) {
-      const payload = {
-        userId: demoUser.id,
-        role: demoUser.role,
-        departmentId: demoUser.departmentId
-      };
-      const accessToken = generateAccessToken(payload);
-      const refreshToken = generateRefreshToken(payload);
-      return res.json({
-        accessToken,
-        refreshToken,
-        user: demoUser
-      });
-    }
-
     return res.status(404).json({ error: 'Account not found' });
   } catch (error) {
     console.error('Authenticate login error:', error);
-    const demoUser = demoUsers[cleanId];
-    if (demoUser) {
-      const payload = {
-        userId: demoUser.id,
-        role: demoUser.role,
-        departmentId: demoUser.departmentId
-      };
-      const accessToken = generateAccessToken(payload);
-      const refreshToken = generateRefreshToken(payload);
-      return res.json({
-        accessToken,
-        refreshToken,
-        user: demoUser
-      });
-    }
-    return res.status(500).json({ error: 'Database connection failed. Please verify DATABASE_URL.' });
+    return res.status(503).json({ error: 'Authentication service is temporarily unavailable.' });
   }
 });
 

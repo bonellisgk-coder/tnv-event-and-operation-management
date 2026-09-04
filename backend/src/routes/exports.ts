@@ -8,7 +8,7 @@ const router = Router();
 // ==========================================
 // EXPORT TO EXCEL
 // ==========================================
-router.get('/excel/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN', 'VOLUNTEER']), async (req: AuthRequest, res: Response) => {
+router.get('/excel/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), async (req: AuthRequest, res: Response) => {
   const { eventId } = req.params;
 
   try {
@@ -164,7 +164,7 @@ router.get('/excel/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEP
 // ==========================================
 // EXPORT TO PDF
 // ==========================================
-router.get('/pdf/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN', 'VOLUNTEER']), async (req: AuthRequest, res: Response) => {
+router.get('/pdf/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), async (req: AuthRequest, res: Response) => {
   const { eventId } = req.params;
 
   try {

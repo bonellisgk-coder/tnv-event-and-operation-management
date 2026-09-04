@@ -25,8 +25,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:postgres_pass_123@db:5432/tnv_db?schema=public
       - PORT=4000
-      - JWT_ACCESS_SECRET=super-access-secret-key-987654321-change-me
-      - JWT_REFRESH_SECRET=super-refresh-secret-key-987654321-change-me
+      - JWT_ACCESS_SECRET=${JWT_ACCESS_SECRET:?JWT_ACCESS_SECRET must be set}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET must be set}
       - APP_URL=http://localhost:5173
       - FRONTEND_URL=http://localhost:5173
       - SMTP_HOST=smtp.ethereal.email

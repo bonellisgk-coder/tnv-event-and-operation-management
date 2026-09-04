@@ -3,7 +3,7 @@ import { prisma } from '../utils/db';
 import { generateSecureToken } from '../utils/token';
 import { sendRegistrationConfirmation, sendMemberInvitation, sendAbsenceNotice } from '../services/email';
 import { authenticateJWT, requireRoles, AuthRequest } from '../middleware/auth';
-import { ParticipantStatus, Role } from '@prisma/client';
+import { EventStatus, ParticipantStatus, Role } from '@prisma/client';
 
 const router = Router();
 
@@ -24,8 +24,8 @@ router.post('/register', async (req: Request, res: Response) => {
       where: { id: eventId }
     });
 
-    if (!event) {
-      return res.status(404).json({ error: 'Event not found' });
+    if (!event || event.status !== EventStatus.PUBLISHED) {
+      return res.status(404).json({ error: 'Event not found or registration is unavailable' });
     }
 
     // Expiry of edit token: 30 days from now (or date of event plus a few days)
@@ -214,7 +214,7 @@ router.post('/self-checkin', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Event not found' });
     }
 
-    if (!event.checkinEnabled) {
+    if (event.status !== EventStatus.ONGOING || !event.checkinEnabled) {
       return res.status(400).json({ error: 'Check-in is currently disabled for this event by coordinators' });
     }
 
@@ -262,7 +262,7 @@ router.post('/self-checkin', async (req: Request, res: Response) => {
 // ==========================================
 
 // Get participants list for event (Search, Filter, Sort)
-router.get('/event/:eventId', authenticateJWT, async (req: AuthRequest, res: Response) => {
+router.get('/event/:eventId', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), async (req: AuthRequest, res: Response) => {
   const { eventId } = req.params;
   const { search, status, sortBy, sortOrder } = req.query;
   const userRole = req.user?.role;
@@ -321,7 +321,7 @@ router.get('/event/:eventId', authenticateJWT, async (req: AuthRequest, res: Res
 });
 
 // Manually update participant status (Coordinators/Admins check-in)
-router.patch('/:id/status', authenticateJWT, async (req: AuthRequest, res: Response) => {
+router.patch('/:id/status', authenticateJWT, requireRoles(['SUPER_ADMIN', 'DEPARTMENT_ADMIN']), async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
   const { status } = req.body; // PENDING, PRESENT, ABSENT
 
@@ -378,6 +378,10 @@ router.post('/auto-email-absentees', authenticateJWT, requireRoles(['SUPER_ADMIN
 
     if (!event) {
       return res.status(404).json({ error: 'Event not found' });
+    }
+
+    if (event.status !== EventStatus.COMPLETED) {
+      return res.status(400).json({ error: 'Absentee processing is available only for completed events' });
     }
 
     // Scoped restriction for Department Admin

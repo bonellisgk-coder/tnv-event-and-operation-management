@@ -1,7 +1,11 @@
 import * as jwt from 'jsonwebtoken';
 
-const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'super-access-secret-key-12345!';
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'super-refresh-secret-key-12345!';
+const JWT_ACCESS_SECRET: string = process.env.JWT_ACCESS_SECRET || '';
+const JWT_REFRESH_SECRET: string = process.env.JWT_REFRESH_SECRET || '';
+
+if (JWT_ACCESS_SECRET.length < 32 || JWT_REFRESH_SECRET.length < 32 || JWT_ACCESS_SECRET === JWT_REFRESH_SECRET) {
+  throw new Error('JWT access and refresh secrets must be distinct and at least 32 characters long');
+}
 
 export interface TokenPayload {
   userId: string;
